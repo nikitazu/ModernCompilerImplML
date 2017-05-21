@@ -1,11 +1,11 @@
 {
   open Lexing
   exception Eof
-  exception IllegalString of int * int * string
+  exception IllegalString of string * int * int * string
   
-  let raise_illegal_string lexbuf =
+  let raise_illegal_string msg lexbuf =
     let p = Lexing.lexeme_start_p lexbuf in
-    IllegalString (p.pos_lnum, p.pos_cnum - p.pos_bol, Lexing.lexeme lexbuf)
+    IllegalString (msg, p.pos_lnum, p.pos_cnum - p.pos_bol, Lexing.lexeme lexbuf)
     |> raise
   
   let raise_eof () =
@@ -111,7 +111,5 @@ and read_string buf = parse
   }
 
 (* Illegal string *)
-| _ { raise_illegal_string lexbuf }
-
-(* EOF *)
-| eof { raise_eof () }
+| _ { raise_illegal_string "Illegal character in string" lexbuf }
+| eof { raise_illegal_string "String is not terminated" lexbuf }
