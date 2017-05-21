@@ -1,16 +1,23 @@
 {
-type pos = int
-exception Eof
+  open Lexing
+  exception Eof
+  
+  let foo x = 
+    Printf.fprintf stdout "yo\n"
+  
+  type nop = unit (* do not remove this line, or TextMate coloring will break *)
 }
 
-let re_digit = ['0'-'9']
-let re_num   = re_digit+
-let re_real1 = re_digit+'.'re_digit*
-let re_real2 = re_digit*'.'re_digit+
+let re_ws      = [' ''\t']
+let re_newline = ['\n']
+let re_digit   = ['0'-'9']
+let re_num     = re_digit+
+let re_real1   = re_digit+'.'re_digit*
+let re_real2   = re_digit*'.'re_digit+
 
 rule token = parse
-| [' ' '\t']      { token lexbuf }
-| ['\n']          { Lexing.new_line lexbuf; token lexbuf }
+| re_ws           { token lexbuf }
+| re_newline      { foo (); new_line lexbuf; token lexbuf }
 (* Keywords *)
 | "while"         { Tokens.t_while lexbuf }
 | "for"           { Tokens.t_for lexbuf }
