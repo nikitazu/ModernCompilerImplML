@@ -25,7 +25,7 @@ rule token = parse
 | "nil"           { Tokens.t_nil }
 (* Punctuation *)
 | ","             { Tokens.t_comma }
-| ":"             { Tokens.t_column }
+| ":"             { Tokens.t_colon }
 | ";"             { Tokens.t_semicol }
 | "("             { Tokens.t_lparen }
 | ")"             { Tokens.t_rparen }

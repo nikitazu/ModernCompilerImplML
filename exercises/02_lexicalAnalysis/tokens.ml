@@ -19,7 +19,7 @@ type token =
 | NIL
 (* Punctuation *)
 | COMMA
-| COLUMN
+| COLON
 | SEMICOL
 | LPAREN
 | RPAREN
@@ -69,7 +69,7 @@ let t_of        = OF
 let t_nil       = NIL
 (* Punctuation *)
 let t_comma     = COMMA
-let t_column    = COLUMN
+let t_colon     = COLON
 let t_semicol   = SEMICOL
 let t_lparen    = LPAREN
 let t_rparen    = RPAREN
@@ -120,7 +120,7 @@ let string_of_token = function
   | NIL        -> "NIL"
   (* Punctuation *)
   | COMMA      -> "COMMA"
-  | COLUMN     -> "COLUMN"
+  | COLON      -> "COLON"
   | SEMICOL    -> "SEMICOL"
   | LPAREN     -> "LPAREN"
   | RPAREN     -> "RPAREN"

@@ -20,7 +20,7 @@ val t_of        : token
 val t_nil       : token
 (* Punctuation *)
 val t_comma     : token
-val t_column    : token
+val t_colon     : token
 val t_semicol   : token
 val t_lparen    : token
 val t_rparen    : token
