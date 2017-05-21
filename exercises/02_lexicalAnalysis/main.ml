@@ -1,7 +1,6 @@
 (* Only lexer is implemented.
    All tokens are printed.
  *)
-
 let main _ =
   try
     let lexbuf = Lexing.from_channel stdin in

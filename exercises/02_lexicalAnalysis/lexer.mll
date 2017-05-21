@@ -3,57 +3,76 @@ type pos = int
 exception Eof
 }
 
+let re_digit = ['0'-'9']
+let re_num   = re_digit+
+let re_real1 = re_digit+'.'re_digit*
+let re_real2 = re_digit*'.'re_digit+
+
 rule token = parse
-| [' ' '\t' '\n'] { token lexbuf }
+| [' ' '\t']      { token lexbuf }
+| ['\n']          { Lexing.new_line lexbuf; token lexbuf }
 (* Keywords *)
-| "while"         { Tokens.t_while }
-| "for"           { Tokens.t_for }
-| "to"            { Tokens.t_to }
-| "break"         { Tokens.t_break }
-| "let"           { Tokens.t_let }
-| "in"            { Tokens.t_in }
-| "end"           { Tokens.t_end }
-| "function"      { Tokens.t_function }
-| "var"           { Tokens.t_var }
-| "type"          { Tokens.t_type }
-| "array"         { Tokens.t_array }
-| "if"            { Tokens.t_if }
-| "then"          { Tokens.t_then }
-| "else"          { Tokens.t_else }
-| "do"            { Tokens.t_do }
-| "of"            { Tokens.t_of }
-| "nil"           { Tokens.t_nil }
+| "while"         { Tokens.t_while lexbuf }
+| "for"           { Tokens.t_for lexbuf }
+| "to"            { Tokens.t_to lexbuf }
+| "break"         { Tokens.t_break lexbuf }
+| "let"           { Tokens.t_let lexbuf }
+| "in"            { Tokens.t_in lexbuf }
+| "end"           { Tokens.t_end lexbuf }
+| "function"      { Tokens.t_function lexbuf }
+| "var"           { Tokens.t_var lexbuf }
+| "type"          { Tokens.t_type lexbuf }
+| "array"         { Tokens.t_array lexbuf }
+| "if"            { Tokens.t_if lexbuf }
+| "then"          { Tokens.t_then lexbuf }
+| "else"          { Tokens.t_else lexbuf }
+| "do"            { Tokens.t_do lexbuf }
+| "of"            { Tokens.t_of lexbuf }
+| "nil"           { Tokens.t_nil lexbuf }
 (* Punctuation *)
-| ","             { Tokens.t_comma }
-| ":"             { Tokens.t_colon }
-| ";"             { Tokens.t_semicol }
-| "("             { Tokens.t_lparen }
-| ")"             { Tokens.t_rparen }
-| "["             { Tokens.t_lsquareb }
-| "]"             { Tokens.t_rsquareb }
-| "{"             { Tokens.t_lcurlyb }
-| "}"             { Tokens.t_rcurlyb }
-| "."             { Tokens.t_dot }
-| "+"             { Tokens.t_plus }
-| "-"             { Tokens.t_minus }
-| "*"             { Tokens.t_mul }
-| "/"             { Tokens.t_div }
-| "="             { Tokens.t_eq }
-| "<>"            { Tokens.t_noteq }
-| "<"             { Tokens.t_less }
-| "<="            { Tokens.t_lesseq }
-| ">"             { Tokens.t_greater }
-| ">="            { Tokens.t_greatereq }
-| "&"             { Tokens.t_and }
-| "|"             { Tokens.t_or }
-| ":="            { Tokens.t_assign }
+| ","             { Tokens.t_comma lexbuf }
+| ":"             { Tokens.t_colon lexbuf }
+| ";"             { Tokens.t_semicol lexbuf }
+| "("             { Tokens.t_lparen lexbuf }
+| ")"             { Tokens.t_rparen lexbuf }
+| "["             { Tokens.t_lsquareb lexbuf }
+| "]"             { Tokens.t_rsquareb lexbuf }
+| "{"             { Tokens.t_lcurlyb lexbuf }
+| "}"             { Tokens.t_rcurlyb lexbuf }
+| "."             { Tokens.t_dot lexbuf }
+| "+"             { Tokens.t_plus lexbuf }
+| "-"             { Tokens.t_minus lexbuf }
+| "*"             { Tokens.t_mul lexbuf }
+| "/"             { Tokens.t_div lexbuf }
+| "="             { Tokens.t_eq lexbuf }
+| "<>"            { Tokens.t_noteq lexbuf }
+| "<"             { Tokens.t_less lexbuf }
+| "<="            { Tokens.t_lesseq lexbuf }
+| ">"             { Tokens.t_greater lexbuf }
+| ">="            { Tokens.t_greatereq lexbuf }
+| "&"             { Tokens.t_and lexbuf }
+| "|"             { Tokens.t_or lexbuf }
+| ":="            { Tokens.t_assign lexbuf }
+
 (* Literals  *)
-| ['0'-'9']+              as n { Tokens.t_num (int_of_string n) }
-| ['0'-'9']+'.'['0'-'9']* as n { Tokens.t_real (float_of_string n) }
-| ['0'-'9']*'.'['0'-'9']+ as n { Tokens.t_real (float_of_string n) }
-| '"'['a'-'z''A'-'Z''0'-'9'' ''.''\\']*'"' as s { Tokens.t_string s}
+
+| re_num              as n
+  { Tokens.t_num (int_of_string n) lexbuf }
+
+| re_real1 as n
+  { Tokens.t_real (float_of_string n) lexbuf }
+| re_real2 as n
+  { Tokens.t_real (float_of_string n) lexbuf }
+
+| '"'['a'-'z''A'-'Z''0'-'9'' ''.''\\']*'"' as s
+  { Tokens.t_string s lexbuf}
+
 (* Identifier *)
-| ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9''_']* as id { Tokens.t_id id }
+
+| ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9''_']* as id
+  { Tokens.t_id id lexbuf }
+
 (* Comments *)
 | "/*"_*"*/"       { token lexbuf }
 | eof              { raise Eof }
+
