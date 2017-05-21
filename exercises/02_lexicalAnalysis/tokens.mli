@@ -46,8 +46,8 @@ val t_and       : Lexing.lexbuf -> token
 val t_or        : Lexing.lexbuf -> token
 val t_assign    : Lexing.lexbuf -> token
 (* Literals  *)
-val t_num       : int -> Lexing.lexbuf    -> token
-val t_real      : float -> Lexing.lexbuf  -> token
+val t_num       : int    -> Lexing.lexbuf -> token
+val t_real      : float  -> Lexing.lexbuf -> token
 val t_string    : string -> Lexing.lexbuf -> token
 (* Identifier *)
 val t_id        : string -> Lexing.lexbuf -> token
