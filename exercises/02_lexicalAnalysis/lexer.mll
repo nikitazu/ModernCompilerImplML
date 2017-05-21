@@ -1,28 +1,35 @@
 {
   open Lexing
   exception Eof
-  exception IllegalString of string * int * int * string
+  exception IllegalSyntax of string * int * int * string
   
-  let raise_illegal_string msg lexbuf =
+  let raise_illegal_syntax msg lexbuf =
     let p = Lexing.lexeme_start_p lexbuf in
-    IllegalString (msg, p.pos_lnum, p.pos_cnum - p.pos_bol, Lexing.lexeme lexbuf)
+    IllegalSyntax (msg, p.pos_lnum, p.pos_cnum - p.pos_bol, Lexing.lexeme lexbuf)
     |> raise
-  
+
   let raise_eof () =
     raise Eof
 
   type nop = unit (* do not remove this line, or TextMate coloring will break *)
 }
 
-let re_ws      = [' ''\t']
-let re_newline = '\n'
-let re_digit   = ['0'-'9']
-let re_num     = re_digit+
-let re_real1   = re_digit+'.'re_digit*
-let re_real2   = re_digit*'.'re_digit+
-let re_dquot   = '"'
-let re_char    = [^ '"' '\\']
+let re_ws            = [' ''\t']
+let re_newline       = '\n'
+let re_digit         = ['0'-'9']
+let re_num           = re_digit+
+let re_real1         = re_digit+'.'re_digit*
+let re_real2         = re_digit*'.'re_digit+
+let re_dquot         = '"'
+let re_char          = [^ '"' '\\']
+let re_comment_open  = "/*"
+let re_comment_close = "*/"
 
+
+(*
+ * PARSE entrypoint
+ * ================
+ *)
 rule token = parse
 | re_ws           { token lexbuf }
 | re_newline      { new_line lexbuf; token lexbuf }
@@ -88,12 +95,16 @@ rule token = parse
   { Tokens.t_id id lexbuf }
 
 (* Comments *)
-| "/*"_*"*/"       { token lexbuf }
+| re_comment_open  { read_comments token 0 lexbuf }
 
 (* EOF *)
 | eof              { raise_eof () }
 
 
+(*
+ * PARSE STRING entrypoint
+ * =======================
+ *)
 and read_string buf = parse
 | re_dquot
   { Tokens.t_string (Buffer.contents buf) lexbuf }
@@ -111,5 +122,25 @@ and read_string buf = parse
   }
 
 (* Illegal string *)
-| _ { raise_illegal_string "Illegal character in string" lexbuf }
-| eof { raise_illegal_string "String is not terminated" lexbuf }
+| _ { raise_illegal_syntax "Illegal character in string" lexbuf }
+| eof { raise_illegal_syntax "String is not terminated" lexbuf }
+
+
+(*
+ * PARSE COMMENTS entrypoint
+ * =========================
+ *)
+and read_comments token index = parse
+| re_comment_open 
+  { read_comments token (index+1) lexbuf }
+
+| re_comment_close
+  { if index == 0
+    then token lexbuf
+    else read_comments token (index-1) lexbuf
+  }
+
+| re_newline  { new_line lexbuf; read_comments token index lexbuf }
+| _           { read_comments token index lexbuf }
+| eof         { raise_illegal_syntax "Comment is not terminated" lexbuf }
+
