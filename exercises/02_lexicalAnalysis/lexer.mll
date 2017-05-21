@@ -54,4 +54,6 @@ rule token = parse
 (*| ['a'-'z']+       { Tokens.t_string "todo"}*)
 (* Identifier *)
 | ['a'-'z''A'-'Z']+['a'-'z''A'-'Z''0'-'9''_']* as id { Tokens.t_id id }
+(* Comments *)
+| "/*"_*"*/"       { token lexbuf }
 | eof              { raise Eof }
