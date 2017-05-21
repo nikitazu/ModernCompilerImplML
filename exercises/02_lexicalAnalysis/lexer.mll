@@ -1,23 +1,31 @@
 {
   open Lexing
   exception Eof
+  exception IllegalString of int * int * string
   
-  let foo x = 
-    Printf.fprintf stdout "yo\n"
+  let raise_illegal_string lexbuf =
+    let p = Lexing.lexeme_start_p lexbuf in
+    IllegalString (p.pos_lnum, p.pos_cnum - p.pos_bol, Lexing.lexeme lexbuf)
+    |> raise
   
+  let raise_eof () =
+    raise Eof
+
   type nop = unit (* do not remove this line, or TextMate coloring will break *)
 }
 
 let re_ws      = [' ''\t']
-let re_newline = ['\n']
+let re_newline = '\n'
 let re_digit   = ['0'-'9']
 let re_num     = re_digit+
 let re_real1   = re_digit+'.'re_digit*
 let re_real2   = re_digit*'.'re_digit+
+let re_dquot   = '"'
+let re_char    = [^ '"' '\\']
 
 rule token = parse
 | re_ws           { token lexbuf }
-| re_newline      { foo (); new_line lexbuf; token lexbuf }
+| re_newline      { new_line lexbuf; token lexbuf }
 (* Keywords *)
 | "while"         { Tokens.t_while lexbuf }
 | "for"           { Tokens.t_for lexbuf }
@@ -71,8 +79,8 @@ rule token = parse
 | re_real2 as n
   { Tokens.t_real (float_of_string n) lexbuf }
 
-| '"'['a'-'z''A'-'Z''0'-'9'' ''.''\\']*'"' as s
-  { Tokens.t_string s lexbuf}
+| re_dquot
+  { read_string (Buffer.create 256) lexbuf }
 
 (* Identifier *)
 
@@ -81,5 +89,29 @@ rule token = parse
 
 (* Comments *)
 | "/*"_*"*/"       { token lexbuf }
-| eof              { raise Eof }
 
+(* EOF *)
+| eof              { raise_eof () }
+
+
+and read_string buf = parse
+| re_dquot
+  { Tokens.t_string (Buffer.contents buf) lexbuf }
+
+| "\\t" { Buffer.add_char buf '\t'; read_string buf lexbuf }
+| "\\r" { Buffer.add_char buf '\r'; read_string buf lexbuf }
+| "\\n" { Buffer.add_char buf '\n'; read_string buf lexbuf }
+| "\\b" { Buffer.add_char buf '\b'; read_string buf lexbuf }
+| "\\\"" { Buffer.add_char buf '\"'; read_string buf lexbuf }
+| "\\\\" { Buffer.add_char buf '\\'; read_string buf lexbuf }
+
+| re_char+
+  { Buffer.add_string buf (Lexing.lexeme lexbuf);
+    read_string buf lexbuf
+  }
+
+(* Illegal string *)
+| _ { raise_illegal_string lexbuf }
+
+(* EOF *)
+| eof { raise_eof () }
