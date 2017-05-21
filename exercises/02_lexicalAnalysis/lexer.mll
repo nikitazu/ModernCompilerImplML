@@ -48,9 +48,10 @@ rule token = parse
 | "or"             { Tokens.t_or }
 | "assign"         { Tokens.t_assign }
 (* Literals  *)
-| ['0'-'9']+       { Tokens.t_num 0 }
-(*| ['0'-'9']+       { Tokens.t_real 0. }
-| ['a'-'z']+       { Tokens.t_string "todo"}*)
+| ['0'-'9']+              as n { Tokens.t_num (int_of_string n) }
+| ['0'-'9']+'.'['0'-'9']* as n { Tokens.t_real (float_of_string n) }
+| ['0'-'9']*'.'['0'-'9']+ as n { Tokens.t_real (float_of_string n) }
+(*| ['a'-'z']+       { Tokens.t_string "todo"}*)
 (* Identifier *)
 | ['a'-'z']+       { Tokens.t_id "todo" }
 | eof              { raise Eof }
