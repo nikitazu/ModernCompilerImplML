@@ -51,9 +51,9 @@ rule token = parse
 | ['0'-'9']+              as n { Tokens.t_num (int_of_string n) }
 | ['0'-'9']+'.'['0'-'9']* as n { Tokens.t_real (float_of_string n) }
 | ['0'-'9']*'.'['0'-'9']+ as n { Tokens.t_real (float_of_string n) }
-(*| ['a'-'z']+       { Tokens.t_string "todo"}*)
+| '"'['a'-'z''A'-'Z''0'-'9'' ''.''\\']*'"' as s { Tokens.t_string s}
 (* Identifier *)
-| ['a'-'z''A'-'Z']+['a'-'z''A'-'Z''0'-'9''_']* as id { Tokens.t_id id }
+| ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9''_']* as id { Tokens.t_id id }
 (* Comments *)
 | "/*"_*"*/"       { token lexbuf }
 | eof              { raise Eof }
