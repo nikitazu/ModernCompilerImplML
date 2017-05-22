@@ -3,7 +3,7 @@ all: main.native
 test: main.native
 	cat program.tig | ./main.native
 
-main.native: main.ml
+main.native: tokens.mli tokens.ml lexer.mll main.ml
 	ocamlbuild main.native
 
 clean:
