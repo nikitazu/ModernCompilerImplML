@@ -57,7 +57,7 @@ type token = tokenvalue * meta
 
 let meta_of_lexbuf lexbuf =
   let p = Lexing.lexeme_start_p lexbuf in
-  (p.pos_lnum, p.pos_cnum - p.pos_bol)
+  (p.Lexing.pos_lnum, p.Lexing.pos_cnum - p.Lexing.pos_bol)
 
 let token_of_meta t lexbuf =
   (t, meta_of_lexbuf lexbuf)
